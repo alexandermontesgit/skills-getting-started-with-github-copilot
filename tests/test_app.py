@@ -71,3 +71,28 @@ def test_signup_rejects_full_activity():
 
     assert response.status_code == 409
     assert response.json()["detail"] == "Activity is full"
+
+
+def test_remove_participant_unregisters_student():
+    response = client.delete(
+        "/activities/Chess Club/signup",
+        params={"email": "  MICHAEL@MERGINGTON.EDU "},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "Removed michael@mergington.edu from Chess Club"
+    }
+    assert "michael@mergington.edu" not in activities["Chess Club"]["participants"]
+
+
+def test_remove_participant_rejects_unknown_student():
+    response = client.delete(
+        "/activities/Chess Club/signup",
+        params={"email": "unknown@mergington.edu"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == (
+        "Student is not signed up for this activity"
+    )
